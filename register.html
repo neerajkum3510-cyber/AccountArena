@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account - AccountArena</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+</head>
+
+<body>
+
+    <h1>AccountArena</h1>
+
+    <h2>Create Account</h2>
+
+    <form id="registerForm">
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Choose a username"
+            required
+        >
+
+        <br><br>
+
+        <input
+            type="text"
+            id="displayName"
+            placeholder="Your name"
+            required
+        >
+
+        <br><br>
+
+        <input
+            type="text"
+            id="className"
+            placeholder="Class (e.g. 12)"
+            required
+        >
+
+        <br><br>
+
+        <input
+            type="text"
+            id="section"
+            placeholder="Section (e.g. A)"
+            required
+        >
+
+        <br><br>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Email"
+            required
+        >
+
+        <br><br>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Create password"
+            minlength="6"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">Create Account</button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <p>
+        Already have an account?
+        <a href="login.html">Login</a>
+    </p>
+
+    <script>
+        const registerForm = document.getElementById("registerForm");
+        const message = document.getElementById("message");
+
+        registerForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const displayName = document.getElementById("displayName").value.trim();
+            const className = document.getElementById("className").value.trim();
+            const section = document.getElementById("section").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            message.textContent = "Creating account...";
+
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        username: username,
+                        display_name: displayName,
+                        class_name: className,
+                        section: section
+                    }
+                }
+            });
+
+            if (error) {
+                message.textContent = error.message;
+                return;
+            }
+
+            message.textContent =
+                "Account created! Please check your email if verification is required.";
+
+            registerForm.reset();
+        });
+    </script>
+
+</body>
+</html>
