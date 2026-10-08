@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Profile - AccountArena</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+</head>
+
+<body>
+
+    <h1>AccountArena</h1>
+
+    <h2>My Profile</h2>
+
+    <div id="profile">
+        <p>Loading profile...</p>
+    </div>
+
+    <button id="logoutButton" type="button">Logout</button>
+
+    <p id="message"></p>
+
+    <script>
+        const profileBox = document.getElementById("profile");
+        const message = document.getElementById("message");
+        const logoutButton = document.getElementById("logoutButton");
+
+        async function loadProfile() {
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const { data: profile, error } = await supabaseClient
+                .from("profiles")
+                .select("username, display_name, class_name, section, role")
+                .eq("id", user.id)
+                .single();
+
+            if (error) {
+                profileBox.innerHTML = `
+                    <p>Logged in as: ${user.email}</p>
+                    <p>Profile data is not available yet.</p>
+                `;
+                return;
+            }
+
+            profileBox.innerHTML = `
+                <p><strong>Username:</strong> ${profile.username || "Not set"}</p>
+                <p><strong>Name:</strong> ${profile.display_name || "Not set"}</p>
+                <p><strong>Class:</strong> ${profile.class_name || "Not set"}</p>
+                <p><strong>Section:</strong> ${profile.section || "Not set"}</p>
+                <p><strong>Role:</strong> ${profile.role || "player"}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+            `;
+        }
+
+        logoutButton.addEventListener("click", async function() {
+            const { error } = await supabaseClient.auth.signOut();
+
+            if (error) {
+                message.textContent = error.message;
+                return;
+            }
+
+            window.location.href = "index.html";
+        });
+
+        loadProfile();
+    </script>
+
+</body>
+</html>
