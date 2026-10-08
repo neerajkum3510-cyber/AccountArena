@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Profile - AccountArena</title>
+    <title>My Profile - AccountArena</title>
 
     <link rel="stylesheet" href="style.css">
 
@@ -22,62 +22,150 @@
         <p>Loading profile...</p>
     </div>
 
-    <button id="logoutButton" type="button">Logout</button>
+    <br>
+
+    <button id="logoutButton" type="button">
+        Logout
+    </button>
 
     <p id="message"></p>
 
     <script>
+
         const profileBox = document.getElementById("profile");
         const message = document.getElementById("message");
         const logoutButton = document.getElementById("logoutButton");
 
+
         async function loadProfile() {
+
+            // Check logged-in user
             const {
                 data: { user },
                 error: userError
             } = await supabaseClient.auth.getUser();
 
-            if (userError || !user) {
-                window.location.href = "login.html";
+
+            if (userError) {
+
+                profileBox.innerHTML = `
+                    <p><strong>Authentication Error</strong></p>
+                    <p>${userError.message}</p>
+                `;
+
                 return;
             }
 
-            const { data: profile, error } = await supabaseClient
+
+            if (!user) {
+
+                window.location.href = "login.html";
+
+                return;
+            }
+
+
+            // Get profile from database
+            const {
+                data: profile,
+                error: profileError
+            } = await supabaseClient
                 .from("profiles")
-                .select("username, display_name, class_name, section, role")
+                .select(
+                    "username, display_name, class_name, section, role"
+                )
                 .eq("id", user.id)
                 .single();
 
-            if (error) {
+
+            // Show exact database error
+            if (profileError) {
+
                 profileBox.innerHTML = `
-                    <p>Logged in as: ${user.email}</p>
-                    <p>Profile data is not available yet.</p>
+                    <h3>Profile Error</h3>
+
+                    <p>
+                        <strong>Message:</strong>
+                        ${profileError.message}
+                    </p>
+
+                    <p>
+                        <strong>Code:</strong>
+                        ${profileError.code || "No code"}
+                    </p>
+
+                    <p>
+                        <strong>User ID:</strong>
+                        ${user.id}
+                    </p>
                 `;
+
                 return;
             }
 
+
+            // Show profile
             profileBox.innerHTML = `
-                <p><strong>Username:</strong> ${profile.username || "Not set"}</p>
-                <p><strong>Name:</strong> ${profile.display_name || "Not set"}</p>
-                <p><strong>Class:</strong> ${profile.class_name || "Not set"}</p>
-                <p><strong>Section:</strong> ${profile.section || "Not set"}</p>
-                <p><strong>Role:</strong> ${profile.role || "player"}</p>
-                <p><strong>Email:</strong> ${user.email}</p>
+
+                <p>
+                    <strong>Username:</strong>
+                    ${profile.username || "Not set"}
+                </p>
+
+                <p>
+                    <strong>Name:</strong>
+                    ${profile.display_name || "Not set"}
+                </p>
+
+                <p>
+                    <strong>Class:</strong>
+                    ${profile.class_name || "Not set"}
+                </p>
+
+                <p>
+                    <strong>Section:</strong>
+                    ${profile.section || "Not set"}
+                </p>
+
+                <p>
+                    <strong>Role:</strong>
+                    ${profile.role || "player"}
+                </p>
+
+                <p>
+                    <strong>Email:</strong>
+                    ${user.email}
+                </p>
+
             `;
         }
 
-        logoutButton.addEventListener("click", async function() {
-            const { error } = await supabaseClient.auth.signOut();
+
+        // Logout
+        logoutButton.addEventListener("click", async function () {
+
+            message.textContent = "Logging out...";
+
+            const { error } =
+                await supabaseClient.auth.signOut();
+
 
             if (error) {
+
                 message.textContent = error.message;
+
                 return;
             }
 
+
             window.location.href = "index.html";
+
         });
 
+
+        // Load profile
         loadProfile();
+
     </script>
 
 </body>
